@@ -1,0 +1,259 @@
+%%%%%%% P R E a~M B U Ł a~%%%%%%%
+% Nie zmieniaj preambuły (linie 1--48), chyba że wiesz, co robisz.
+% w~razie potrzeby marginesy dokumentu możesz zmienić w~linii 29, odblokowując ją poprzez usunięcie znaku % na jej początku.
+% Właściwa edycja treści rozpoczyna się w~linii 52.
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[MeX]{polski}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,polish]{babel}
+\usepackage{cite}
+\usepackage{amsmath,amsfonts}
+\usepackage{graphicx}
+\usepackage[tight,footnotesize]{subfigure}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[small]{caption}
+\usepackage{makecell} % Used to break text in a~single cell of a~table.
+\usepackage{float}
+\restylefloat{table}
+\usepackage{tabto}
+\usepackage[shortlabels]{enumitem}
+\usepackage{adjustbox}
+\usepackage{array}
+\usepackage{fancyvrb}
+\usepackage{systeme}
+\usepackage{bold-extra}
+\usepackage{alltt}
+\usepackage{tgcursor}
+\usepackage{ragged2e}
+\usepackage{pgfplots}
+%\usepackage{minted}
+\usepackage{indentfirst}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+\definecolor{violet-code}{RGB}{142, 35, 148}
+\definecolor{yellow-code}{RGB}{145, 104, 15}
+\definecolor{green-code}{RGB}{9, 107, 27}
+\definecolor{blue-code}{RGB}{8, 93, 204}
+\definecolor{comment}{RGB}{107, 69, 9}
+
+
+
+\usepackage[colorlinks=true,citecolor=blue,linkcolor=red,urlcolor=blue,pagebackref=true]{hyperref}
+%\usepackage[top=35mm,left=35mm,bottom=35mm,right=35mm]{geometry}
+
+% Potrzebne do tworzenia schematów blokowych.
+% https://www.overleaf.com/learn/latex/LaTeX_Graphics_using_TikZ:_A_Tutorial_for_Beginners_(Part_3)%E2%80%94Creating_Flowcharts
+\usepackage{tikz} 
+\usetikzlibrary{shapes.geometric, arrows} 
+\tikzstyle{startstop} = [ellipse, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=black!0]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=1cm, minimum height=1cm, text centered, draw=black, fill=yellow!0]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!0]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!0]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+
+\usepgfplotslibrary{units}
+
+\usepackage[all]{nowidow}
+
+% https://stackoverflow.com/questions/1662037/how-to-write-programming-code-containing-the-character-in-latex
+\usepackage{upquote} % Rozwiązuje problem w~otoczeniu verbatim, gdzie wystarczy użyć '. Natomiast w~{\tt } trzeba zamiast ' pisać \textquotesingle, czyli np. {\tt \textquotesingle Ala ma kota.\textquotesingle}. Inaczej będą zakręcone, nie proste, co bruździ przy przeklejaniu kodu z pdf do edytora kodu.
+
+\sisetup{
+  round-mode          = places,
+  round-precision     = 2,
+}
+
+\frenchspacing
+
+%%%%%%%%% D O K U M E N T %%%%%%%%%
+
+\begin{document}
+
+\title{Porównanie wydajności algorytmów sortowania}
+% \footnote{Za $n$ podstaw odpowiednią liczbę; np.\ 1 dla Listy~1.}
+
+\author{Mikołaj Kikolski, 261830}
+
+\date{\today~r.}
+
+\maketitle
+
+\section{Wstęp}
+W zadaniu zostaliśmy poproszeni o zmodyfikowanie algorytmu sortowania szybkiego przedstawionego na wykładzie, przez wstawienie do niego sprawdzenia, zmieniającego algorytm sortowania na zaimplementoway przez nas na poprzedniej liście algorytm sortowania bąbelkowego lub sortowania przez wstawianie dla krótkich list. Następnie, należało porównać skuteczność algorytmu z wykładu, zmodyfikowanego quicksorta oraz bubblesorta przy sortowaniu losowo wygenerowanych list. Zadanie podzieliłem na kilka etapów, które opiszę w następnej sekcji.
+\section{Kroki rozwiązywania problemu}
+Na początku, określiłem trudności, które mogę napotkać podczas rozwiązywania zadania oraz dodatkowe zależności, które mógłbym zbadać jako rozwinięcie rozwiązania problemu.\par
+Pojawiły się następujące pytania:
+\begin{itemize}
+\item \textit{Jak długa jest krótka lista?}
+\item \textit{Jakich długości list użyć?}
+\item \textit{Z jak dużego zakresu liczb wybierać liczby do sortowania?}
+\item \textit{Jak to zrobić żeby się nie narobić, czyli jak zbierać dane żey wygodnie je analizować?}
+\end{itemize}
+\section{Początkowe ustalenia}
+Po przeprowadzeniu kilku prób, doszedłem do następujących wniosków i odpowiedzi na pytania:
+\subsection*{Jak długa jest krótka lista?}
+Początkowo chciałem rozwiązać sprawę matematycznie i na stronie \\ \url{wolframalpha.com}, sprawdziłem jakie rozwiązanie ma nierówność pomiędzy średnimi złożonościami obliczeniowymi danych algorytmów. Dla quicksorta, jest to $nlog(n)$, a dla bubblesorta - $n^2$. Okazuje się, że nierówność $nlog(n) > n^2$, nie ma rozwiązań rzeczywistych. Oznacza to, że teoretycznie, niezależnie od długości listy, quicksort radzi sobie lepiej. Teoria jednak nie zawsze ma odzwierciedlenie w praktyce, więc na potrzeby testów przyjąłem, że krótka lista, to taka, gdzie $n < 10$. Dodatkowo, jako rozwinięcie eksperymentu, można sprawdzić jak zmieniają się różnice w wydajności w zależności od granicznego $n$
+\subsection*{Jakich długości list użyć?}
+Po pierwszych testach, w których użyłem zaproponowanych w treści zadania długości: $10$, $10^2$, $10^3$ i $10^4$, zauważyłem, że obie wersje quicksorta dają dla wszystkich prób na liście dziesięcioelementowej, czas równy 0\si{\second}. Dlatego zdecydowałem się użyć długości $10^2$, $10^3$, $10^4$ i $10^5$.
+\subsection*{Z jakiego zakresu wybierać liczby?}
+Szczerze mówiąc, nadal nie wiem, ale zdecydowałem się zmienić ją z proponowanego $10^6$, na $10^9$, ponieważ przesunąłem również zakres długości list.
+\subsection*{Jak gromadzić dane?}
+Po zobaczeniu jak dużo danych mam do zgromadzenia, jako osoba leniwa, zdecydowałem się skorzystać z pomocy biblioteki \verb|csv|, dzięki której byłem w stanie zapisywać wyniki pomiarów do plików \verb|.csv|, które z kolei łatwo zaimportować i dalej opracowywać w programie MS Excel (oraz wykorzystywać do wykonywania wykresów w \LaTeX).
+\newpage
+\section{Wykres zależności czasu obliczeń od długości listy}
+\subsection*{Porównanie dwóch wersji algorytmu quicksort}
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=\linewidth, % Scale the plot to \linewidth
+          grid=major, % Display a grid
+          grid style={dashed,gray!30}, % Set the style
+          xlabel=Długość listy, % Set the labels
+          ylabel=Czas trwania obliczeń (s),
+          xmode=log,
+          legend style={at={(0.165,1)},
+	      anchor=north}
+        ]
+        \addplot[color=blue!40!white,mark=*, only marks] 
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        coordinates{(100,0.00017)(1000,0.0021)(10000,0.020)(100000,0.41)};
+        \legend{Quicksort} 
+        \addplot[color=red!60!gray,mark=square, only marks] 
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        coordinates{(100,0.00017)(1000,0.0025)(10000,0.020)(100000,0.41)};
+        \addlegendentry{Modified Quicksort} 
+        
+      \end{axis}
+    \end{tikzpicture}
+  \end{center}
+\end{figure}
+Zauważmy, że uśrednione wyniki dla obu wersji algorytmu, są praktycznie identyczne, co pozwala przypuszczać, że optymalizacja nic nie wnosi. Zdziwiłem się tymi wynikami, bo kilka dni wcześniej, tłumacząc jak zrobić to zadanie kolegom z roku, dla $n = 6$, zanotowałem poprawę wydajności o około $20\%$. Czy możliwe żeby taka różnica była powodowana tylko tym jakie tablice zostaną wylosowane?
+
+\subsection*{Porównanie wszystkich algorytmów sortujących}
+Wzbraniałem się przed przedstawieniem wszystkich wyników pomiarów na jednym wykresie, ponieważ dla długości listy $10^4$, bubblesort był ponad $1000$ razy, a dla listy długości $10^5$ - prawie $7000$ razy wolniejszy. Poniższe wykresy na obu osiach wykorzystują skalę logarytmiczną.
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=\linewidth, % Scale the plot to \linewidth
+          grid=major, % Display a grid
+          grid style={dashed,gray!30}, % Set the style
+          xlabel=Długość listy, % Set the labels
+          ylabel=Czas trwania obliczeń (s),
+          xmode=log,
+          ymode=log,
+          legend style={at={(0.165,1)},
+	      anchor=north}
+        ]
+        \addplot[color=blue!40!white,mark=*, only marks] 
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        coordinates{(100,0.00017)(1000,0.0021)(10000,0.020)(100000,0.41)};
+        \legend{Quicksort} 
+        \addplot[color=red!60!gray,mark=square, only marks] 
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        coordinates{(100,0.00017)(1000,0.0025)(10000,0.020)(100000,0.41)};
+        \addlegendentry{Modified Quicksort} 
+         \addplot[color=olive!70!gray,mark=triangle*, only marks] 
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        coordinates{(100,0.0012)(1000,0.19)(10000,21.18)(100000,2829.24)};
+        \addlegendentry{Bubblesort} 
+        
+      \end{axis}
+    \end{tikzpicture}
+  \end{center}
+\end{figure}
+Zależność pokazuje, że im dłuższa jest tablica, tym mniej opłacalne jest stosowanie algorytmu sortowania bąbelkowego. \par
+Wnioski wynikające z tej części, sprawiły, że zdecydowałem się jeszcze bardziej zagłębić w temat zoptymalizowanego algorytmu quicksort i wykonać kilka testów.
+\newpage
+\section{Dalsze testy}
+Po wykonaniu zadań, na miejsce początkowych pytań, pojawiły się nowe.
+\begin{itemize}
+\item \textit{Jaka jest optymalna wartość granicznego $n$?}
+\item \textit{Jak przedstawiają się zależności dla większych długości list?}
+\end{itemize}
+Żeby odpowiedzieć na te pytania, zdecydowałem się zbadać dwie zależności:
+\begin{enumerate}
+\item Jak zmienia się czas obliczeń dla $n$ w zakresie $5$ - $50$ dla tablicy o długości $10^5$.
+\item Jak względem siebie wypadają algorytmy quicksort, zmodyfikowany quickosort z $n = 10$ i zmodyfikowany quicksort z optymalnym $n$ wynikającym z pierwszej zależności, dla list o długościach $10^3$ - $10^6$, wypełnionymi liczbami w zakresie $1$ - $10^{12}$.
+\end{enumerate}
+\newpage
+\subsection*{Poszukiwania optymalnego $n$}
+Po zmodyfikowaniu mojego programu, tak żeby stworzył od razu plik~\verb|.csv| z interesującymi mnie danymi, otrzymałem następujący wykres.
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=\linewidth, % Scale the plot to \linewidth
+          grid=major, % Display a grid
+          grid style={dashed,gray!30}, % Set the style
+          xlabel=Długość listy, % Set the labels
+          ylabel=Czas trwania obliczeń (s),
+          legend style={at={(0.165,1)},
+	      anchor=north}
+        ]
+        \addplot[color=red!50!gray,mark=*]
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        table[x=n,y=avg_time,col sep=semicolon] {var_n_quicksort.csv};
+        
+        
+      \end{axis}
+    \end{tikzpicture}
+  \end{center}
+\end{figure}
+Na podstawie tego wykresu zauważamy, że dla $n\geq20$, czas obliczeń znacząco wzrasta. Dodatkowo, możemy odczytać, że opytymalnie $n = 8$. W takim razie w następnym kroku porównam algorytmy, które będę określał jako quicksort, quicksort8 i quicksort10.
+\newpage
+\subsection*{Czy optymalizacja quicksorta jest w ogóle opłacalna?}
+Żeby odpowiedzieć na to pytanie, porównam quicksort, optymalny quicksort8 oraz quicksort10, którego używałem w początkowej części eksprymentu.
+\begin{figure}[H]
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=\linewidth, % Scale the plot to \linewidth
+          grid=major, % Display a grid
+          grid style={dashed,gray!30}, % Set the style
+          xlabel=Długość listy, % Set the labels
+          ylabel=Czas trwania obliczeń (s),
+          xmode=log,
+          legend style={at={(0.165,1)},
+	      anchor=north}
+        ]
+        \addplot[color=orange!50!gray,mark=*]
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        table[x=le,y=t_q,col sep=semicolon] {optimised.csv};
+        \legend{quicksort}
+        \addplot[color=green!60!black,mark=*]
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        table[x=le,y=t_q8,col sep=semicolon] {optimised.csv};
+        \addlegendentry{quicksort8}
+        \addplot[color=cyan!80!gray,mark=*]
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        table[x=le,y=t_q10,col sep=semicolon] {optimised.csv};
+        \addlegendentry{quicksort10}
+        
+        
+      \end{axis}
+    \end{tikzpicture}
+  \end{center}
+\end{figure}
+Zauważmy, że dla długości list do $2\cdot10^5$, quicksort8 jest faktycznie szybszy niż zwykły quicksort. Z kolei, dla list dłuższych, quicksort jest zdecydowanie lepszy niż obie modyfikacje quicksortu.
+\section{Wnioski}
+Podsumowując przeprowadzone doświadczenia, dochodzę do wniosku, że zoptymalizowane wersje algrytmu quicksort, są użyteczne jedynie dla list długości krótszej niż $2\cdot10^5$. Ponadto, na wydajność poszczególnych algorytmów wpływa też to, jak bardzo nieuporządkowana jest wyjściowa lista, co można stwierdzić na podstawie samych teoretycznych współczynników $O(n)$ dla sortowania bąblekowego oraz sortowania szybkiego.
+
+\end{document}
